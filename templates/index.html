@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis with CSV</title>
+</head>
+<body>
+    <h1>Sentiment Analysis of CSV File</h1>
+    <form action="/analyze_csv" method="post" enctype="multipart/form-data">
+        <label for="file">Upload CSV File:</label>
+        <input type="file" id="file" name="file" accept=".csv" required>
+        <button type="submit">Upload and Analyze</button>
+    </form>
+
+    <br>
+    <h2>Result:</h2>
+    {% if message %}
+        <p>{{ message }}</p>
+        <p><a href="{{ filename }}" target="_blank">Download the result CSV</a></p>
+    {% endif %}
+</body>
+</html>
