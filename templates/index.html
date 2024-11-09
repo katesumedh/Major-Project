@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentiment Analysis</title>
+    <title>SocialCred</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,7 +21,7 @@
             max-width: 500px;
             width: 100%;
         }
-        input[type="text"] {
+        input[type="file"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
@@ -45,24 +45,26 @@
         .result p {
             font-weight: bold;
         }
+        .result p.positive { color: green; }
+        .result p.negative { color: red; }
+        .result p.neutral { color: gray; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Sentiment Analysis</h2>
-    <form action="/analyze" method="POST">
-        <label for="text">Enter a statement:</label>
-        <input type="text" id="text" name="text" required>
+    <h2>SocialCred</h2>
+    <form action="/analyze" method="POST" enctype="multipart/form-data">
+        <label for="file">Upload file:</label>
+        <input type="file" id="file" name="file" accept=".csv" required>
         <input type="submit" value="Analyze">
     </form>
 
-    {% if label %}
+    {% if result %}
     <div class="result">
-        <p><strong>Input:</strong> {{ input_text }}</p>
-        <p><strong>Activity:</strong> {{ label }}</p>
-        <p><strong>Confidence:</strong> {{ score }}</p>
-        <p><strong>Credit Score:</strong> {{ credit_score }}</p>
+        <h3>Analysis Result:</h3>
+        <p class="{{ result.label.lower() }}">{{ result.label }} (Confidence: {{ result.score }})</p>
+        <p>Credit Score: {{ result.credit_score }}</p>
     </div>
     {% endif %}
 </div>
