@@ -1,59 +1,106 @@
 from flask import Flask, render_template, request
-import pickle
+import pandas as pd
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from scipy.special import softmax
 import random
+import os
 
 app = Flask(__name__)
 
-# Load the model (make sure to use your own pickle file)
-MODEL_PATH = "roberta_model.pkl"  # Path to your pickle file
+# Load the pretrained model and tokenizer from Hugging Face
 tokenizer = AutoTokenizer.from_pretrained("cardiffnlp/twitter-roberta-base-sentiment")
 model = AutoModelForSequenceClassification.from_pretrained("cardiffnlp/twitter-roberta-base-sentiment")
 
 # Function to get sentiment using RoBERTa
 def get_sentiment(text):
-    encoded_text = tokenizer(text, return_tensors='pt')
-    output = model(**encoded_text)
-    scores = output[0][0].detach().numpy()
-    scores = softmax(scores)
-    scores_dict = {
-        'roberta_neg': scores[0],
-        'roberta_neu': scores[1],
-        'roberta_pos': scores[2]
-    }
-    return scores_dict
+    # Split the text into chunks of 512 tokens (or smaller if needed)
+    chunk_size = 512  # You can adjust this based on the model's max token length
+    tokens = tokenizer.tokenize(text)
+    chunks = [tokens[i:i + chunk_size] for i in range(0, len(tokens), chunk_size)]
+    
+    # Initialize score variables
+    total_scores = {'roberta_neg': 0, 'roberta_neu': 0, 'roberta_pos': 0}
+    
+    for chunk in chunks:
+        # Convert chunk back to text
+        chunk_text = tokenizer.convert_tokens_to_string(chunk)
+        
+        # Tokenize the chunk with truncation and padding
+        encoded_text = tokenizer(chunk_text, return_tensors='pt', truncation=True, padding=True, max_length=512)
+        
+        # Get the model's output
+        output = model(**encoded_text)
+        scores = output[0][0].detach().numpy()
+        
+        # Apply softmax to the scores
+        scores = softmax(scores)
+        
+        # Aggregate the scores
+        total_scores['roberta_neg'] += scores[0]
+        total_scores['roberta_neu'] += scores[1]
+        total_scores['roberta_pos'] += scores[2]
+    
+    # Normalize the scores to get the final sentiment
+    total_score_sum = sum(total_scores.values())
+    normalized_scores = {key: score / total_score_sum for key, score in total_scores.items()}
+    
+    return normalized_scores
+
 
 # Define a route for the home page
 @app.route('/')
 def home():
     return render_template('index.html')
 
-# Define a route for processing sentiment analysis
+# Define a route for processing sentiment analysis (for CSV)
 @app.route('/analyze', methods=['POST'])
 def analyze():
     if request.method == 'POST':
-        # Get the input text from the form
-        input_text = request.form['text']
+        # Check if a file is uploaded
+        if 'file' not in request.files:
+            return 'No file part', 400
         
-        # Get sentiment results
-        sentiment = get_sentiment(input_text)
+        file = request.files['file']
         
-        # Find the dominant sentiment
-        if sentiment['roberta_pos'] > sentiment['roberta_neg'] and sentiment['roberta_pos'] > sentiment['roberta_neu']:
-            label = 'POSITIVE'
-            score = sentiment['roberta_pos']
-            credit_score = random.randint(700, 900)
-        elif sentiment['roberta_neg'] > sentiment['roberta_pos'] and sentiment['roberta_neg'] > sentiment['roberta_neu']:
-            label = 'NEGATIVE'
-            score = sentiment['roberta_neg']
-            credit_score = random.randint(350, 600)
+        if file.filename == '':
+            return 'No selected file', 400
+        
+        # Ensure the file is a CSV
+        if file and file.filename.endswith('.csv'):
+            # Read the CSV into a pandas dataframe
+            df = pd.read_csv(file)
+
+            # Combine all the rows in the CSV as one large block of text
+            combined_text = ' '.join(df.astype(str).apply(' '.join, axis=1))
+
+            # Get sentiment for the combined text
+            sentiment = get_sentiment(combined_text)
+            
+            # Find the dominant sentiment
+            if sentiment['roberta_pos'] > sentiment['roberta_neg'] and sentiment['roberta_pos'] > sentiment['roberta_neu']:
+                label = 'POSITIVE'
+                score = sentiment['roberta_pos']
+                credit_score = random.randint(700, 900)
+            elif sentiment['roberta_neg'] > sentiment['roberta_pos'] and sentiment['roberta_neg'] > sentiment['roberta_neu']:
+                label = 'NEGATIVE'
+                score = sentiment['roberta_neg']
+                credit_score = random.randint(350, 600)
+            else:
+                label = 'NEUTRAL'
+                score = sentiment['roberta_neu']
+                credit_score = random.randint(600, 700)
+
+            # Return the result to the template
+            result = {
+                'label': label,
+                'score': score,
+                'credit_score': credit_score
+            }
+
+            return render_template('index.html', result=result)
+
         else:
-            label = 'NEUTRAL'
-            score = sentiment['roberta_neu']
-            credit_score = random.randint(600, 700)
-        
-        return render_template('index.html', label=label, score=score, input_text=input_text, credit_score = credit_score)
+            return 'Invalid file format. Please upload a CSV file.', 400
 
 if __name__ == "__main__":
     app.run(debug=True)
