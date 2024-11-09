@@ -3,21 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentiment Analysis with CSV</title>
+    <title>Sentiment Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            max-width: 500px;
+            width: 100%;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .result p {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <h1>Sentiment Analysis of CSV File</h1>
-    <form action="/analyze_csv" method="post" enctype="multipart/form-data">
-        <label for="file">Upload CSV File:</label>
-        <input type="file" id="file" name="file" accept=".csv" required>
-        <button type="submit">Upload and Analyze</button>
+
+<div class="container">
+    <h2>Sentiment Analysis</h2>
+    <form action="/analyze" method="POST">
+        <label for="text">Enter a statement:</label>
+        <input type="text" id="text" name="text" required>
+        <input type="submit" value="Analyze">
     </form>
 
-    <br>
-    <h2>Result:</h2>
-    {% if message %}
-        <p>{{ message }}</p>
-        <p><a href="{{ filename }}" target="_blank">Download the result CSV</a></p>
+    {% if label %}
+    <div class="result">
+        <p><strong>Input:</strong> {{ input_text }}</p>
+        <p><strong>Activity:</strong> {{ label }}</p>
+        <p><strong>Confidence:</strong> {{ score }}</p>
+        <p><strong>Credit Score:</strong> {{ credit_score }}</p>
+    </div>
     {% endif %}
+</div>
+
 </body>
 </html>
