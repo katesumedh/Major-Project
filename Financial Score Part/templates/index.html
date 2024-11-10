@@ -3,12 +3,104 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Credit Score Prediction</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>SocialCred</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      background-color: #fff;
+      max-width: 800px; /* Increased width */
+      width: 90%; /* Responsive for smaller screens */
+      padding: 30px; /* Increased padding */
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #4a90e2;
+      margin-bottom: 20px;
+      font-size: 1.8em; /* Slightly larger heading */
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 12px; /* Slightly larger padding for inputs */
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      outline: none;
+      font-size: 15px; /* Larger font size for readability */
+      transition: border-color 0.3s;
+    }
+
+    input[type="number"]:focus {
+      border-color: #4a90e2;
+    }
+
+    .btn-primary {
+      background-color: #4a90e2;
+      color: #fff;
+      padding: 12px 25px; /* Increased button padding */
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      margin-top: 20px;
+    }
+
+    .btn-primary:hover {
+      background-color: #357abf;
+    }
+
+    .result {
+      margin-top: 20px;
+      background-color: #e8f4fc;
+      padding: 15px;
+      border-radius: 5px;
+      border: 1px solid #b3daff;
+    }
+
+    .result h3 {
+      color: #333;
+    }
+
+    .result p {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h2>Credit Score Prediction</h2>
+    <h2>Welcome to SocialCred</h2>
+    <h4>Enter your financial details to complete Step 1</h4>
     <form action="/predict" method="POST">
       <!-- Collecting 17 features -->
       <div class="form-group">
@@ -96,7 +188,7 @@
         <input type="number" id="monthly_balance" name="monthly_balance" required>
       </div>
 
-      <button type="submit" class="btn-primary">Predict Credit Score</button>
+      <button type="submit" class="btn-primary">Proceed to Step 2</button>
     </form>
 
     {% if prediction %}
